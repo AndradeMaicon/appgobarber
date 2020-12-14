@@ -3,15 +3,21 @@ import React, {
   createContext,
   useCallback,
   useState,
-  useContext
+  useContext,
 } from 'react';
-import AsyncStorage from '@react-native-community/async-storage'
+import AsyncStorage from '@react-native-community/async-storage';
 import api from '../services/api';
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url: string;
+}
 
 interface AuthState {
   token: string;
-  user: object;
+  user: User;
 }
 
 interface SignInCredentials {
@@ -20,7 +26,7 @@ interface SignInCredentials {
 }
 
 interface AuthContextData {
-  user: object;
+  user: User;
   loading: boolean;
   signIn(credentials: SignInCredentials): Promise<void>;
   signOut(): void;
@@ -36,40 +42,40 @@ export const AuthProvider: React.FC = ({ children }) => {
     async function loadSotrageData(): Promise<void> {
       const [token, user] = await AsyncStorage.multiGet([
         '@GoBarber:token',
-        '@GoBarber:user'
+        '@GoBarber:user',
       ]);
 
       if (token[1] && user[1]) {
-        setData({ token: token[1] , user: JSON.parse(user[1]) });
+        setData({ token: token[1], user: JSON.parse(user[1]) });
       }
 
       setLoading(false);
     }
 
-    loadSotrageData()
-  }, [])
+    loadSotrageData();
+  }, []);
 
   const signIn = useCallback(async ({ email, password }) => {
     const response = await api.post('sessions', {
       email,
       password,
-    })
+    });
 
     const { token, user } = response.data;
 
     AsyncStorage.multiSet([
       ['@GoBarber:token', token],
-      ['@GoBarber:user', JSON.stringify(user)]
+      ['@GoBarber:user', JSON.stringify(user)],
     ]);
 
-    setData({ token , user });
-  }, [])
+    setData({ token, user });
+  }, []);
 
-  const signOut = useCallback( async () => {
+  const signOut = useCallback(async () => {
     await AsyncStorage.multiRemove(['@GoBarber:token', '@GoBarber:user']);
 
     setData({} as AuthState);
-  }, [])
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user: data.user, loading, signIn, signOut }}>
@@ -78,7 +84,7 @@ export const AuthProvider: React.FC = ({ children }) => {
   );
 };
 
-export function useAuth() : AuthContextData {
+export function useAuth(): AuthContextData {
   const context = useContext(AuthContext);
 
   if (!context) {
