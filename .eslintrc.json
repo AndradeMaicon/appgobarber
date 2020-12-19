@@ -36,6 +36,7 @@
     "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
     "import/prefer-default-export": "off",
     "prettier/prettier": "error",
+    "import/no-duplicates": "off",
     "camelcase":"off",
     "react/prop-types": "off",
     "import/extensions": [
